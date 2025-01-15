@@ -24,6 +24,8 @@ type WebsiteSSLCreate struct {
 	SkipDNS       bool   `json:"skipDNS"`
 	Nameserver1   string `json:"nameserver1"`
 	Nameserver2   string `json:"nameserver2"`
+	ExecShell     bool   `json:"execShell"`
+	Shell         string `json:"shell"`
 }
 
 type WebsiteDNSReq struct {
@@ -39,6 +41,7 @@ type WebsiteSSLApply struct {
 	ID           uint     `json:"ID" validate:"required"`
 	SkipDNSCheck bool     `json:"skipDNSCheck"`
 	Nameservers  []string `json:"nameservers"`
+	DisableLog   bool     `json:"disableLog"`
 }
 
 type WebsiteAcmeAccountCreate struct {
@@ -77,7 +80,7 @@ type WebsiteSSLUpdate struct {
 	PrimaryDomain string `json:"primaryDomain" validate:"required"`
 	OtherDomains  string `json:"otherDomains"`
 	Provider      string `json:"provider" validate:"required"`
-	AcmeAccountID uint   `json:"acmeAccountId" validate:"required"`
+	AcmeAccountID uint   `json:"acmeAccountId"`
 	DnsAccountID  uint   `json:"dnsAccountId"`
 	KeyType       string `json:"keyType"`
 	Apply         bool   `json:"apply"`
@@ -87,6 +90,8 @@ type WebsiteSSLUpdate struct {
 	SkipDNS       bool   `json:"skipDNS"`
 	Nameserver1   string `json:"nameserver1"`
 	Nameserver2   string `json:"nameserver2"`
+	ExecShell     bool   `json:"execShell"`
+	Shell         string `json:"shell"`
 }
 
 type WebsiteSSLUpload struct {
@@ -126,6 +131,8 @@ type WebsiteCAObtain struct {
 	Renew       bool   `json:"renew"`
 	SSLID       uint   `json:"sslID"`
 	Description string `json:"description"`
+	ExecShell   bool   `json:"execShell"`
+	Shell       string `json:"shell"`
 }
 
 type WebsiteCARenew struct {

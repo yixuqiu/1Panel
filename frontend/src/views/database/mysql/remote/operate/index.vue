@@ -1,5 +1,11 @@
 <template>
-    <el-drawer v-model="drawerVisible" :destroy-on-close="true" :close-on-click-modal="false" size="50%">
+    <el-drawer
+        v-model="drawerVisible"
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        size="50%"
+    >
         <template #header>
             <DrawerHeader
                 :hideResource="dialogData.title === 'create'"
@@ -172,7 +178,7 @@ const handleClose = () => {
 };
 
 const rules = reactive({
-    name: [Rules.requiredInput],
+    name: [Rules.simpleName, Rules.noSpace],
     type: [Rules.requiredSelect],
     version: [Rules.requiredSelect],
     address: [Rules.ipV4V6OrDomain],

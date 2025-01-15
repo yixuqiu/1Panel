@@ -1,5 +1,11 @@
 <template>
-    <el-drawer :close-on-click-modal="false" v-model="open" size="30%">
+    <el-drawer
+        :destroy-on-close="true"
+        :close-on-click-modal="false"
+        :close-on-press-escape="false"
+        v-model="open"
+        size="30%"
+    >
         <template #header>
             <DrawerHeader
                 :header="process.operate == 'create' ? $t('commons.button.create') : $t('commons.button.edit')"
@@ -21,7 +27,7 @@
                         </el-input>
                     </el-form-item>
                     <el-form-item :label="$t('tool.supervisor.command')" prop="command">
-                        <el-input v-model.trim="process.command"></el-input>
+                        <el-input v-model="process.command"></el-input>
                     </el-form-item>
                     <el-form-item :label="$t('tool.supervisor.numprocs')" prop="numprocsNum">
                         <el-input type="number" v-model.number="process.numprocsNum"></el-input>

@@ -31,6 +31,20 @@ export namespace Website {
         sitePath: string;
         appName: string;
         runtimeName: string;
+        runtimeType: string;
+    }
+    export interface WebsiteRes extends CommonModel {
+        protocol: string;
+        primaryDomain: string;
+        type: string;
+        alias: string;
+        remark: string;
+        status: string;
+        expireDate: string;
+        sitePath: string;
+        appName: string;
+        runtimeName: string;
+        sslExpireDate: Date;
     }
 
     export interface NewAppInstall {
@@ -64,6 +78,8 @@ export namespace Website {
         otherDomains: string;
         proxy: string;
         proxyType: string;
+        ftpUser: string;
+        ftpPassword: string;
     }
 
     export interface WebSiteUpdateReq {
@@ -177,6 +193,8 @@ export namespace Website {
         nameserver2: string;
         disableCNAME: boolean;
         skipDNS: boolean;
+        execShell: boolean;
+        shell: string;
     }
 
     export interface SSLDTO extends SSL {
@@ -261,6 +279,7 @@ export namespace Website {
         httpConfig: string;
         SSLProtocol: string[];
         algorithm: string;
+        hsts: boolean;
     }
 
     export interface CheckReq {
@@ -337,6 +356,11 @@ export namespace Website {
         id: number;
     }
 
+    export interface ProxyDel {
+        id: number;
+        name: string;
+    }
+
     export interface ProxyConfig {
         id: number;
         operate: string;
@@ -354,6 +378,8 @@ export namespace Website {
         content?: string;
         proxyAddress?: string;
         proxyProtocol?: string;
+        sni: boolean;
+        proxySSLName: string;
     }
 
     export interface ProxReplace {
@@ -502,5 +528,13 @@ export namespace Website {
 
     export interface SSLDownload {
         id: number;
+    }
+
+    export interface WebsiteHtml {
+        content: string;
+    }
+    export interface WebsiteHtmlUpdate {
+        type: string;
+        content: string;
     }
 }

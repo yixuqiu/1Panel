@@ -50,10 +50,30 @@ export namespace Setting {
         snapshotIgnore: string;
         xpackHideMenu: string;
         noAuthSetting: string;
+
+        proxyUrl: string;
+        proxyType: string;
+        proxyPort: string;
+        proxyUser: string;
+        proxyPasswd: string;
+        proxyPasswdKeep: string;
+
+        apiInterfaceStatus: string;
+        apiKey: string;
+        ipWhiteList: string;
+        apiKeyValidityTime: number;
     }
     export interface SettingUpdate {
         key: string;
         value: string;
+    }
+    export interface ProxyUpdate {
+        proxyUrl: string;
+        proxyType: string;
+        proxyPort: string;
+        proxyUser: string;
+        proxyPasswd: string;
+        proxyPasswdKeep: string;
     }
     export interface SSLUpdate {
         ssl: string;
@@ -98,6 +118,7 @@ export namespace Setting {
         fromAccounts: Array<string>;
         defaultDownload: string;
         description: string;
+        secret: string;
     }
     export interface SnapshotImport {
         from: string;
@@ -108,6 +129,7 @@ export namespace Setting {
         id: number;
         isNew: boolean;
         reDownload: boolean;
+        secret: string;
     }
     export interface SnapshotInfo {
         id: number;
@@ -117,7 +139,7 @@ export namespace Setting {
         description: string;
         status: string;
         message: string;
-        createdAt: DateTimeFormats;
+        created_at: DateTimeFormats;
         version: string;
         interruptStep: string;
         recoverStatus: string;
@@ -126,6 +148,12 @@ export namespace Setting {
         rollbackStatus: string;
         rollbackMessage: string;
         lastRollbackedAt: string;
+        secret: string;
+    }
+    export interface SnapshotFile {
+        id: number;
+        name: string;
+        size: number;
     }
     export interface SnapshotStatus {
         panel: string;
@@ -151,11 +179,21 @@ export namespace Setting {
         assigneeName: string;
         productPro: string;
         trial: boolean;
+        offline: boolean;
         status: string;
         message: string;
+        smsUsed: number;
+        smsTotal: number;
     }
     export interface LicenseStatus {
         productPro: string;
+        trial: boolean;
         status: string;
+    }
+    export interface ApiConfig {
+        apiInterfaceStatus: string;
+        apiKey: string;
+        ipWhiteList: string;
+        apiKeyValidityTime: number;
     }
 }

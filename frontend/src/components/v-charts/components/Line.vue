@@ -6,7 +6,11 @@ import { onMounted, nextTick, watch, onBeforeUnmount } from 'vue';
 import * as echarts from 'echarts';
 import { GlobalStore } from '@/store';
 import { computeSizeFromKBs, computeSizeFromKB, computeSizeFromMB } from '@/utils/util';
+import { storeToRefs } from 'pinia';
+import i18n from '@/lang';
 const globalStore = GlobalStore();
+const { isDarkTheme } = storeToRefs(globalStore);
+
 const props = defineProps({
     id: {
         type: String,
@@ -27,10 +31,24 @@ const props = defineProps({
     option: {
         type: Object,
         required: true,
-    }, // option: { title , xData, yData, formatStr, yAxis, grid, tooltip}
+    },
 });
 
 const seriesStyle = [
+    {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            {
+                offset: 0,
+                color: getComputedStyle(document.documentElement).getPropertyValue('--panel-color-primary').trim(),
+            },
+            {
+                offset: 1,
+                color: getComputedStyle(document.documentElement)
+                    .getPropertyValue('--panel-color-primary-light-9')
+                    .trim(),
+            },
+        ]),
+    },
     {
         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             {
@@ -89,14 +107,13 @@ function initChart() {
         itemChart = echarts.init(document.getElementById(props.id) as HTMLElement);
     }
 
-    const theme = globalStore.$state.themeConfig.theme || 'light';
-
     const series = [];
     if (props.option?.yData?.length) {
         props.option?.yData.forEach((item: any, index: number) => {
             series.push({
                 name: item?.name,
                 type: 'line',
+                itemStyle: seriesStyle[index + 2],
                 areaStyle: seriesStyle[index],
                 data: item?.data,
                 showSymbol: false,
@@ -112,7 +129,7 @@ function initChart() {
                     show: true,
                     lineStyle: {
                         type: 'dashed',
-                        opacity: theme === 'dark' ? 0.1 : 1,
+                        opacity: isDarkTheme.value ? 0.1 : 1,
                     },
                 },
                 ...item,
@@ -132,31 +149,49 @@ function initChart() {
         z: 1,
         tooltip: props.option.tooltip || {
             trigger: 'axis',
-            formatter: function (datas: any) {
-                let res = datas[0].name + '<br/>';
+            formatter: function (dataList: any) {
+                let res = dataList[0].name + '<br/>';
                 switch (props.option.formatStr) {
                     case 'KB/s':
-                        for (const item of datas) {
-                            res += item.marker + ' ' + item.seriesName + '：' + computeSizeFromKBs(item.data) + '<br/>';
-                        }
-                        break;
-                    case 'KB':
-                        for (const item of datas) {
-                            res += item.marker + ' ' + item.seriesName + '：' + computeSizeFromKB(item.data) + '<br/>';
-                        }
-                        break;
-                    case 'MB':
-                        for (const item of datas) {
-                            res += item.marker + ' ' + item.seriesName + '：' + computeSizeFromMB(item.data) + '<br/>';
-                        }
-                        break;
-                    default:
-                        for (const item of datas) {
+                        for (const item of dataList) {
                             res +=
                                 item.marker +
                                 ' ' +
                                 item.seriesName +
-                                '：' +
+                                i18n.global.t('commons.colon') +
+                                computeSizeFromKBs(item.data) +
+                                '<br/>';
+                        }
+                        break;
+                    case 'KB':
+                        for (const item of dataList) {
+                            res +=
+                                item.marker +
+                                ' ' +
+                                item.seriesName +
+                                i18n.global.t('commons.colon') +
+                                computeSizeFromKB(item.data) +
+                                '<br/>';
+                        }
+                        break;
+                    case 'MB':
+                        for (const item of dataList) {
+                            res +=
+                                item.marker +
+                                ' ' +
+                                item.seriesName +
+                                i18n.global.t('commons.colon') +
+                                computeSizeFromMB(item.data) +
+                                '<br/>';
+                        }
+                        break;
+                    default:
+                        for (const item of dataList) {
+                            res +=
+                                item.marker +
+                                ' ' +
+                                item.seriesName +
+                                i18n.global.t('commons.colon') +
                                 item.data +
                                 props.option.formatStr +
                                 '<br/>';
@@ -184,7 +219,7 @@ function initChart() {
                       //分隔辅助线
                       lineStyle: {
                           type: 'dashed', //线的类型 虚线0
-                          opacity: theme === 'dark' ? 0.1 : 1, //透明度
+                          opacity: isDarkTheme.value ? 0.1 : 1, //透明度
                       },
                   },
               },

@@ -30,6 +30,7 @@ type SettingInfo struct {
 	ServerPort             string `json:"serverPort"`
 	SSL                    string `json:"ssl"`
 	SSLType                string `json:"sslType"`
+	AutoRestart            string `json:"autoRestart"`
 	BindDomain             string `json:"bindDomain"`
 	AllowIPs               string `json:"allowIPs"`
 	SecurityEntrance       string `json:"securityEntrance"`
@@ -58,6 +59,18 @@ type SettingInfo struct {
 	SnapshotIgnore string `json:"snapshotIgnore"`
 	XpackHideMenu  string `json:"xpackHideMenu"`
 	NoAuthSetting  string `json:"noAuthSetting"`
+
+	ProxyUrl        string `json:"proxyUrl"`
+	ProxyType       string `json:"proxyType"`
+	ProxyPort       string `json:"proxyPort"`
+	ProxyUser       string `json:"proxyUser"`
+	ProxyPasswd     string `json:"proxyPasswd"`
+	ProxyPasswdKeep string `json:"proxyPasswdKeep"`
+
+	ApiInterfaceStatus string `json:"apiInterfaceStatus"`
+	ApiKey             string `json:"apiKey"`
+	IpWhiteList        string `json:"ipWhiteList"`
+	ApiKeyValidityTime string `json:"apiKeyValidityTime"`
 }
 
 type SettingUpdate struct {
@@ -66,12 +79,13 @@ type SettingUpdate struct {
 }
 
 type SSLUpdate struct {
-	SSLType string `json:"sslType" validate:"required,oneof=self select import import-paste import-local"`
-	Domain  string `json:"domain"`
-	SSL     string `json:"ssl" validate:"required,oneof=enable disable"`
-	Cert    string `json:"cert"`
-	Key     string `json:"key"`
-	SSLID   uint   `json:"sslID"`
+	SSLType     string `json:"sslType" validate:"required,oneof=self select import import-paste import-local"`
+	Domain      string `json:"domain"`
+	SSL         string `json:"ssl" validate:"required,oneof=enable disable"`
+	Cert        string `json:"cert"`
+	Key         string `json:"key"`
+	SSLID       uint   `json:"sslID"`
+	AutoRestart string `json:"autoRestart"`
 }
 type SSLInfo struct {
 	Domain   string `json:"domain"`
@@ -91,6 +105,12 @@ type PortUpdate struct {
 	ServerPort uint `json:"serverPort" validate:"required,number,max=65535,min=1"`
 }
 
+type PageSnapshot struct {
+	PageInfo
+	Info    string `json:"info"`
+	OrderBy string `json:"orderBy" validate:"required,oneof=name created_at"`
+	Order   string `json:"order" validate:"required,oneof=null ascending descending"`
+}
 type SnapshotStatus struct {
 	Panel      string `json:"panel"`
 	PanelInfo  string `json:"panelInfo"`
@@ -109,11 +129,17 @@ type SnapshotCreate struct {
 	From            string `json:"from" validate:"required"`
 	DefaultDownload string `json:"defaultDownload" validate:"required"`
 	Description     string `json:"description" validate:"max=256"`
+	Secret          string `json:"secret"`
 }
 type SnapshotRecover struct {
-	IsNew      bool `json:"isNew"`
-	ReDownload bool `json:"reDownload"`
-	ID         uint `json:"id" validate:"required"`
+	IsNew      bool   `json:"isNew"`
+	ReDownload bool   `json:"reDownload"`
+	ID         uint   `json:"id" validate:"required"`
+	Secret     string `json:"secret"`
+}
+type SnapshotBatchDelete struct {
+	DeleteWithFile bool   `json:"deleteWithFile"`
+	Ids            []uint `json:"ids" validate:"required"`
 }
 type SnapshotImport struct {
 	From        string   `json:"from"`
@@ -128,7 +154,7 @@ type SnapshotInfo struct {
 	DefaultDownload string    `json:"defaultDownload"`
 	Status          string    `json:"status"`
 	Message         string    `json:"message"`
-	CreatedAt       time.Time `json:"createdAt"`
+	CreatedAt       time.Time `json:"created_at"`
 	Version         string    `json:"version"`
 
 	InterruptStep    string `json:"interruptStep"`
@@ -138,6 +164,12 @@ type SnapshotInfo struct {
 	RollbackStatus   string `json:"rollbackStatus"`
 	RollbackMessage  string `json:"rollbackMessage"`
 	LastRollbackedAt string `json:"lastRollbackedAt"`
+}
+
+type SnapshotFile struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+	Size int64  `json:"size"`
 }
 
 type UpgradeInfo struct {
@@ -160,11 +192,21 @@ type Upgrade struct {
 	Version string `json:"version" validate:"required"`
 }
 
+type ProxyUpdate struct {
+	ProxyUrl        string `json:"proxyUrl"`
+	ProxyType       string `json:"proxyType"`
+	ProxyPort       string `json:"proxyPort"`
+	ProxyUser       string `json:"proxyUser"`
+	ProxyPasswd     string `json:"proxyPasswd"`
+	ProxyPasswdKeep string `json:"proxyPasswdKeep"`
+}
+
 type CleanData struct {
 	SystemClean    []CleanTree `json:"systemClean"`
 	UploadClean    []CleanTree `json:"uploadClean"`
 	DownloadClean  []CleanTree `json:"downloadClean"`
 	SystemLogClean []CleanTree `json:"systemLogClean"`
+	ContainerClean []CleanTree `json:"containerClean"`
 }
 
 type CleanTree struct {
@@ -184,4 +226,20 @@ type Clean struct {
 	TreeType string `json:"treeType"`
 	Name     string `json:"name"`
 	Size     uint64 `json:"size"`
+}
+
+type XpackHideMenu struct {
+	ID       string          `json:"id"`
+	Label    string          `json:"label"`
+	IsCheck  bool            `json:"isCheck"`
+	Title    string          `json:"title"`
+	Path     string          `json:"path,omitempty"`
+	Children []XpackHideMenu `json:"children,omitempty"`
+}
+
+type ApiInterfaceConfig struct {
+	ApiInterfaceStatus string `json:"apiInterfaceStatus"`
+	ApiKey             string `json:"apiKey"`
+	IpWhiteList        string `json:"ipWhiteList"`
+	ApiKeyValidityTime string `json:"apiKeyValidityTime"`
 }

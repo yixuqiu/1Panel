@@ -84,6 +84,24 @@ func Init() {
 		migrations.AddDeveloperSetting,
 
 		migrations.AddWebsiteSSLColumn,
+		migrations.AddRedisCommand,
+		migrations.AddMonitorMenu,
+		migrations.AddFtp,
+		migrations.AddProxy,
+		migrations.AddCronJobColumn,
+		migrations.AddForward,
+		migrations.AddShellColumn,
+		migrations.AddClam,
+		migrations.AddClamStatus,
+		migrations.AddAlertMenu,
+		migrations.AddComposeColumn,
+
+		migrations.AddAutoRestart,
+		migrations.AddApiInterfaceConfig,
+		migrations.AddApiKeyValidityTime,
+
+		migrations.UpdateAppTag,
+		migrations.UpdateApp,
 	})
 	if err := m.Migrate(); err != nil {
 		global.LOG.Error(err)

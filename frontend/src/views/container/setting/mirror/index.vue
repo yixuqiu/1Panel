@@ -1,6 +1,12 @@
 <template>
     <div>
-        <el-drawer v-model="drawerVisible" :destroy-on-close="true" :close-on-click-modal="false" size="30%">
+        <el-drawer
+            v-model="drawerVisible"
+            :destroy-on-close="true"
+            :close-on-click-modal="false"
+            :close-on-press-escape="false"
+            size="30%"
+        >
             <template #header>
                 <DrawerHeader :header="$t('container.mirrors')" :back="handleClose" />
             </template>
@@ -68,7 +74,7 @@ const rules = reactive({
 
 function checkMirrors(rule: any, value: any, callback: any) {
     if (form.mirrors !== '') {
-        const reg = /^https?:\/\/[a-zA-Z0-9./-]+$/;
+        const reg = /^https?:\/\/[a-zA-Z0-9.-]+(:[0-9]{1,5})?(\/[a-zA-Z0-9./-]*)?$/;
         let mirrors = form.mirrors.split('\n');
         for (const item of mirrors) {
             if (item === '') {

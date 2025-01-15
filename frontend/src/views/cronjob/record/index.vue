@@ -2,32 +2,39 @@
     <div v-if="recordShow" v-loading="loading">
         <div class="app-status p-mt-20">
             <el-card>
-                <div>
-                    <el-popover
-                        v-if="dialogData.rowData.name.length >= 15"
-                        placement="top-start"
-                        trigger="hover"
-                        width="250"
-                        :content="$t('cronjob.' + dialogData.rowData.type) + ' - ' + dialogData.rowData.name"
-                    >
-                        <template #reference>
-                            <el-tag style="float: left" effect="dark" type="success">
-                                {{ $t('cronjob.' + dialogData.rowData.type) }} -
-                                {{ dialogData.rowData.name.substring(0, 12) }}...
-                            </el-tag>
-                        </template>
-                    </el-popover>
-                    <el-tag v-if="dialogData.rowData.name.length < 15" class="float-left" effect="dark" type="success">
-                        {{ $t('cronjob.' + dialogData.rowData.type) }} - {{ dialogData.rowData.name }}
-                    </el-tag>
+                <div class="flex w-full flex-col gap-4 md:flex-row">
+                    <div class="flex flex-wrap gap-4">
+                        <el-popover
+                            v-if="dialogData.rowData.name.length >= 15"
+                            placement="top-start"
+                            trigger="hover"
+                            width="250"
+                            :content="$t('cronjob.' + dialogData.rowData.type) + ' - ' + dialogData.rowData.name"
+                        >
+                            <template #reference>
+                                <el-tag style="float: left" effect="dark" type="success">
+                                    {{ $t('cronjob.' + dialogData.rowData.type) }} -
+                                    {{ dialogData.rowData.name.substring(0, 12) }}...
+                                </el-tag>
+                            </template>
+                        </el-popover>
+                        <el-tag
+                            v-if="dialogData.rowData.name.length < 15"
+                            class="float-left"
+                            effect="dark"
+                            type="success"
+                        >
+                            {{ $t('cronjob.' + dialogData.rowData.type) }} - {{ dialogData.rowData.name }}
+                        </el-tag>
 
-                    <el-tag v-if="dialogData.rowData.status === 'Enable'" round class="status-content" type="success">
-                        {{ $t('commons.status.running') }}
-                    </el-tag>
-                    <el-tag v-if="dialogData.rowData.status === 'Disable'" round class="status-content" type="info">
-                        {{ $t('commons.status.stopped') }}
-                    </el-tag>
-                    <span class="buttons">
+                        <el-tag v-if="dialogData.rowData.status === 'Enable'" round type="success">
+                            {{ $t('commons.status.running') }}
+                        </el-tag>
+                        <el-tag v-if="dialogData.rowData.status === 'Disable'" round type="info">
+                            {{ $t('commons.status.stopped') }}
+                        </el-tag>
+                    </div>
+                    <div class="mt-0.5">
                         <el-button type="primary" @click="onHandle(dialogData.rowData)" link>
                             {{ $t('commons.button.handle') }}
                         </el-button>
@@ -52,7 +59,7 @@
                         <el-button :disabled="!hasRecords" type="primary" @click="onClean" link>
                             {{ $t('commons.button.clean') }}
                         </el-button>
-                    </span>
+                    </div>
                 </div>
             </el-card>
         </div>
@@ -108,7 +115,7 @@
                                                 {{ $t('commons.status.failed') }}
                                             </el-tag>
                                             <span>
-                                                {{ dateFormat(0, 0, row.startTime) }}
+                                                {{ row.startTime }}
                                             </span>
                                         </template>
                                     </el-table-column>
@@ -236,7 +243,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, reactive, ref, shallowRef } from 'vue';
+import { nextTick, onBeforeUnmount, reactive, ref, shallowRef } from 'vue';
 import { Cronjob } from '@/api/interface/cronjob';
 import { searchRecords, handleOnce, updateStatus, cleanRecords, getRecordLog } from '@/api/modules/cronjob';
 import { dateFormat } from '@/utils/util';
@@ -415,10 +422,12 @@ const loadRecord = async (row: Cronjob.Record) => {
             return;
         }
         currentRecordDetail.value = log;
-        const state = view.value.state;
-        view.value.dispatch({
-            selection: { anchor: state.doc.length, head: state.doc.length },
-            scrollIntoView: true,
+        nextTick(() => {
+            const state = view.value.state;
+            view.value.dispatch({
+                selection: { anchor: state.doc.length, head: state.doc.length },
+                scrollIntoView: true,
+            });
         });
     }
 };

@@ -141,6 +141,10 @@ func (u *MysqlService) Create(ctx context.Context, req dto.MysqlDBCreate) (*mode
 }
 
 func (u *MysqlService) BindUser(req dto.BindUser) error {
+	if cmd.CheckIllegal(req.Username, req.Password, req.Permission) {
+		return buserr.New(constant.ErrCmdIllegal)
+	}
+
 	dbItem, err := mysqlRepo.Get(mysqlRepo.WithByMysqlName(req.Database), commonRepo.WithByName(req.DB))
 	if err != nil {
 		return err
@@ -196,6 +200,9 @@ func (u *MysqlService) LoadFromRemote(req dto.MysqlLoadDB) error {
 		for i := 0; i < len(databases); i++ {
 			if strings.EqualFold(databases[i].Name, data.Name) && strings.EqualFold(databases[i].MysqlName, data.MysqlName) {
 				hasOld = true
+				if databases[i].IsDelete {
+					_ = mysqlRepo.Update(databases[i].ID, map[string]interface{}{"is_delete": false})
+				}
 				deleteList = append(deleteList[:i], deleteList[i+1:]...)
 				break
 			}
@@ -240,7 +247,7 @@ func (u *MysqlService) DeleteCheck(req dto.MysqlDBDeleteCheck) ([]string, error)
 			}
 		}
 	} else {
-		apps, _ := appInstallResourceRepo.GetBy(appInstallResourceRepo.WithResourceId(db.ID))
+		apps, _ := appInstallResourceRepo.GetBy(appInstallResourceRepo.WithResourceId(db.ID), appRepo.WithKey(req.Type))
 		for _, app := range apps {
 			appInstall, _ := appInstallRepo.GetFirst(commonRepo.WithByID(app.AppInstallId))
 			if appInstall.ID != 0 {
@@ -362,6 +369,17 @@ func (u *MysqlService) ChangePassword(req dto.ChangeDBInfo) error {
 
 	if err := updateInstallInfoInDB(req.Type, req.Database, "password", req.Value); err != nil {
 		return err
+	}
+	if req.From == "local" {
+		remote, err := databaseRepo.Get(commonRepo.WithByName(req.Database))
+		if err != nil {
+			return err
+		}
+		pass, err := encrypt.StringEncrypt(req.Value)
+		if err != nil {
+			return fmt.Errorf("decrypt database password failed, err: %v", err)
+		}
+		_ = databaseRepo.Update(remote.ID, map[string]interface{}{"password": pass})
 	}
 	return nil
 }
@@ -507,11 +525,11 @@ func (u *MysqlService) LoadStatus(req dto.OperationWithNameAndType) (*dto.MysqlS
 
 	if value, ok := statusMap["Run"]; ok {
 		uptime, _ := strconv.Atoi(value)
-		info.Run = time.Unix(time.Now().Unix()-int64(uptime), 0).Format("2006-01-02 15:04:05")
+		info.Run = time.Unix(time.Now().Unix()-int64(uptime), 0).Format(constant.DateTimeLayout)
 	} else {
 		if value, ok := statusMap["Uptime"]; ok {
 			uptime, _ := strconv.Atoi(value)
-			info.Run = time.Unix(time.Now().Unix()-int64(uptime), 0).Format("2006-01-02 15:04:05")
+			info.Run = time.Unix(time.Now().Unix()-int64(uptime), 0).Format(constant.DateTimeLayout)
 		}
 	}
 
@@ -519,7 +537,10 @@ func (u *MysqlService) LoadStatus(req dto.OperationWithNameAndType) (*dto.MysqlS
 	info.Position = "OFF"
 	rows, err := executeSqlForRows(app.ContainerName, app.Key, app.Password, "show master status;")
 	if err != nil {
-		return nil, err
+		rows, err = executeSqlForRows(app.ContainerName, app.Key, app.Password, "SHOW BINARY LOG STATUS;")
+		if err != nil {
+			return nil, err
+		}
 	}
 	if len(rows) > 2 {
 		itemValue := strings.Split(rows[1], "\t")

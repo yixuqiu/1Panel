@@ -5,6 +5,7 @@
         size="40%"
         :destroy-on-close="true"
         :close-on-click-modal="false"
+        :close-on-press-escape="false"
     >
         <template #header>
             <DrawerHeader :header="$t('file.upload')" :back="handleClose" />
@@ -12,9 +13,9 @@
         <div class="button-container">
             <div>
                 <el-button type="primary" @click="upload('file')">
-                    {{ $t('file.upload') }}{{ $t('file.file') }}
+                    {{ $t('file.uploadFile') }}
                 </el-button>
-                <el-button type="primary" @click="upload('dir')">{{ $t('file.upload') }}{{ $t('file.dir') }}</el-button>
+                <el-button type="primary" @click="upload('dir')">{{ $t('file.uploadDirectory') }}</el-button>
             </div>
             <el-button @click="clearFiles">{{ $t('file.clearList') }}</el-button>
         </div>
@@ -38,7 +39,7 @@
             ref="uploadRef"
             :on-change="fileOnChange"
             :on-exceed="handleExceed"
-            :on-success="hadleSuccess"
+            :on-success="handleSuccess"
             :show-file-list="false"
             multiple
             v-model:file-list="uploaderFiles"
@@ -94,7 +95,7 @@ import { ChunkUploadFileData, UploadFileData } from '@/api/modules/files';
 import i18n from '@/lang';
 import DrawerHeader from '@/components/drawer-header/index.vue';
 import { MsgError, MsgSuccess, MsgWarning } from '@/utils/message';
-import { Close } from '@element-plus/icons-vue';
+import { Close, Document, UploadFilled } from '@element-plus/icons-vue';
 import { TimeoutEnum } from '@/enums/http-enum';
 
 interface UploadFileProps {
@@ -118,16 +119,12 @@ const state = reactive({
     uploadEle: null,
 });
 const uploaderFiles = ref<UploadFiles>([]);
-const hoverIndex = ref(null);
+const hoverIndex = ref<number | null>(null);
 const tmpFiles = ref<UploadFiles>([]);
 const breakFlag = ref(false);
 
 const upload = (command: string) => {
-    if (command == 'dir') {
-        state.uploadEle.webkitdirectory = true;
-    } else {
-        state.uploadEle.webkitdirectory = false;
-    }
+    state.uploadEle.webkitdirectory = command == 'dir';
     uploadRef.value.$el.querySelector('input').value = '';
     uploadRef.value.$el.querySelector('input').click();
 };
@@ -148,15 +145,10 @@ const initTempFiles = () => {
 const handleDrop = async (event: DragEvent) => {
     initTempFiles();
     event.preventDefault();
-    const items = event.dataTransfer.items;
-
+    const items = event.dataTransfer?.items;
     if (items) {
-        for (let i = 0; i < items.length; i++) {
-            const entry = items[i].webkitGetAsEntry();
-            if (entry) {
-                await traverseFileTree(entry);
-            }
-        }
+        const entries = Array.from(items).map((item) => item.webkitGetAsEntry());
+        await Promise.all(entries.map((entry) => traverseFileTree(entry)));
         if (!breakFlag.value) {
             uploaderFiles.value = uploaderFiles.value.concat(tmpFiles.value);
         } else {
@@ -190,7 +182,9 @@ const convertFileToUploadFile = (file: File, path: string): UploadFile => {
 
 const traverseFileTree = async (item: any, path = '') => {
     path = path || '';
-
+    if (!item) {
+        return;
+    }
     if (item.isFile) {
         if (tmpFiles.value.length > 1000) {
             breakFlag.value = true;
@@ -208,7 +202,7 @@ const traverseFileTree = async (item: any, path = '') => {
         const dirReader = item.createReader();
         const readEntries = async () => {
             const entries = await new Promise<any[]>((resolve) => {
-                dirReader.readEntries((entries) => {
+                dirReader.readEntries((entries: any[] | PromiseLike<any[]>) => {
                     resolve(entries);
                 });
             });
@@ -217,8 +211,8 @@ const traverseFileTree = async (item: any, path = '') => {
                 return;
             }
 
-            for (let i = 0; i < entries.length; i++) {
-                await traverseFileTree(entries[i], path + item.name + '/');
+            for (const element of entries) {
+                await traverseFileTree(element, path + item.name + '/');
                 if (breakFlag.value) {
                     return;
                 }
@@ -229,7 +223,7 @@ const traverseFileTree = async (item: any, path = '') => {
     }
 };
 
-const handleDragleave = (event) => {
+const handleDragleave = (event: { preventDefault: () => void }) => {
     event.preventDefault();
 };
 
@@ -258,7 +252,7 @@ const handleExceed: UploadProps['onExceed'] = () => {
     MsgWarning(i18n.global.t('file.uploadOverLimit'));
 };
 
-const hadleSuccess: UploadProps['onSuccess'] = (res, file) => {
+const handleSuccess: UploadProps['onSuccess'] = (res, file) => {
     file.status = 'success';
 };
 
@@ -348,7 +342,7 @@ const getPathWithoutFilename = (path: string) => {
     return path ? path.split('/').slice(0, -1).join('/') : path;
 };
 
-const getFilenameFromPath = (path) => {
+const getFilenameFromPath = (path: string) => {
     return path ? path.split('/').pop() : path;
 };
 
